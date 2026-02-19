@@ -1,14 +1,12 @@
-import { AzureOpenAI } from 'openai'
+import OpenAI from 'openai'
 
 const endpoint = process.env.AZURE_OPENAI_ENDPOINT!
 const apiKey = process.env.AZURE_OPENAI_API_KEY!
-const deployment = process.env.AZURE_OPENAI_DEPLOYMENT!
 
-export const ai = new AzureOpenAI({
-  endpoint,
+// Azure AI Foundry uses the resource-level /models inference API
+const resourceBase = new URL(endpoint).origin
+
+export const ai = new OpenAI({
+  baseURL: `${resourceBase}/models`,
   apiKey,
-  deployment,
-  apiVersion: '2025-01-01-preview',
 })
-
-export { deployment }

@@ -72,7 +72,7 @@ ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', mon
         ...messages.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content })),
       ],
       temperature: 0.7,
-      max_tokens: 1500,
+      max_completion_tokens: 1500,
       stream: true,
     })
 
@@ -116,6 +116,7 @@ ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', mon
       },
     })
   } catch (err) {
+    console.error('[chat API] Azure OpenAI error:', err)
     const message = err instanceof Error ? err.message : 'Chat request failed'
     return new Response(JSON.stringify({ error: message }), {
       status: 502,

@@ -87,7 +87,7 @@ Keep recommendations specific and actionable. Use the tree's name. Format as mar
         { role: 'user', content: prompt },
       ],
       temperature: 0.7,
-      max_tokens: 2000,
+      max_completion_tokens: 2000,
     })
 
     const plan = response.choices[0]?.message?.content ?? 'No plan generated.'

@@ -86,7 +86,6 @@ Keep recommendations specific and actionable. Use the tree's name. Format as mar
         { role: 'system', content: 'You are Kodama, a knowledgeable bonsai care advisor. Be concise, warm, and specific.' },
         { role: 'user', content: prompt },
       ],
-      temperature: 0.7,
       max_completion_tokens: 2000,
     })
 

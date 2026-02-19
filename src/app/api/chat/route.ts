@@ -71,7 +71,6 @@ ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', mon
         { role: 'system', content: systemPrompt },
         ...messages.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content })),
       ],
-      temperature: 0.7,
       max_completion_tokens: 1500,
       stream: true,
     })

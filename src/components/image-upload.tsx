@@ -67,8 +67,7 @@ export function ImageUpload({ treeId, onUploaded }: ImageUploadProps) {
       if (exifDate instanceof Date && !isNaN(exifDate.getTime())) {
         const yyyy = exifDate.getFullYear()
         const mm = String(exifDate.getMonth() + 1).padStart(2, '0')
-        const dd = String(exifDate.getDate()).padStart(2, '0')
-        setTakenAt(`${yyyy}-${mm}-${dd}`)
+        setTakenAt(`${yyyy}-${mm}`)
       }
     } catch {
       // EXIF extraction is best-effort — ignore failures
@@ -216,12 +215,7 @@ export function ImageUpload({ treeId, onUploaded }: ImageUploadProps) {
 
           <label className="block">
             <span className="text-xs font-medium text-[var(--muted)]">Date taken</span>
-            <input
-              type="date"
-              value={takenAt}
-              onChange={(e) => setTakenAt(e.target.value)}
-              className="field-input mt-1"
-            />
+            <MonthYearInput value={takenAt} onChange={setTakenAt} />
           </label>
         </div>
       )}
@@ -251,6 +245,54 @@ export function ImageUpload({ treeId, onUploaded }: ImageUploadProps) {
           )}
         </button>
       )}
+    </div>
+  )
+}
+
+// ─── Month/Year picker ────────────────────────────────────────
+
+const MONTHS = [
+  { value: '01', label: 'Jan' }, { value: '02', label: 'Feb' }, { value: '03', label: 'Mar' },
+  { value: '04', label: 'Apr' }, { value: '05', label: 'May' }, { value: '06', label: 'Jun' },
+  { value: '07', label: 'Jul' }, { value: '08', label: 'Aug' }, { value: '09', label: 'Sep' },
+  { value: '10', label: 'Oct' }, { value: '11', label: 'Nov' }, { value: '12', label: 'Dec' },
+]
+
+function MonthYearInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const m = value?.slice(5, 7) ?? ''
+  const y = value?.slice(0, 4) ?? ''
+
+  const currentYear = new Date().getFullYear()
+  const years = Array.from({ length: 50 }, (_, i) => String(currentYear - i))
+
+  const update = (newM: string, newY: string) => {
+    onChange(newM && newY ? `${newY}-${newM}` : '')
+  }
+
+  return (
+    <div className="mt-1 flex gap-2">
+      <select
+        value={m}
+        onChange={(e) => update(e.target.value, y)}
+        aria-label="Month"
+        className="field-input flex-1"
+      >
+        <option value="">Month</option>
+        {MONTHS.map((mo) => (
+          <option key={mo.value} value={mo.value}>{mo.label}</option>
+        ))}
+      </select>
+      <select
+        value={y}
+        onChange={(e) => update(m, e.target.value)}
+        aria-label="Year"
+        className="field-input flex-1"
+      >
+        <option value="">Year</option>
+        {years.map((yr) => (
+          <option key={yr} value={yr}>{yr}</option>
+        ))}
+      </select>
     </div>
   )
 }

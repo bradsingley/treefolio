@@ -112,12 +112,9 @@ export function TreeForm({ species, action, defaultValues, submitLabel = 'Add Tr
           />
         </Field>
         <Field label="Acquired">
-          <input
+          <MonthYearPicker
             name="acquired_date"
-            type="date"
-            aria-label="Acquired date"
-            defaultValue={defaultValues?.acquired_date ?? ''}
-            className="field-input"
+            defaultValue={defaultValues?.acquired_date?.slice(0, 7) ?? ''}
           />
         </Field>
       </div>
@@ -207,5 +204,51 @@ function Field({ label, required, children }: { label: string; required?: boolea
       </span>
       {children}
     </label>
+  )
+}
+
+const MONTHS = [
+  { value: '01', label: 'Jan' }, { value: '02', label: 'Feb' }, { value: '03', label: 'Mar' },
+  { value: '04', label: 'Apr' }, { value: '05', label: 'May' }, { value: '06', label: 'Jun' },
+  { value: '07', label: 'Jul' }, { value: '08', label: 'Aug' }, { value: '09', label: 'Sep' },
+  { value: '10', label: 'Oct' }, { value: '11', label: 'Nov' }, { value: '12', label: 'Dec' },
+]
+
+function MonthYearPicker({ name, defaultValue }: { name: string; defaultValue: string }) {
+  const [m, setM] = useState(defaultValue?.slice(5, 7) ?? '')
+  const [y, setY] = useState(defaultValue?.slice(0, 4) ?? '')
+
+  const currentYear = new Date().getFullYear()
+  const years = Array.from({ length: 50 }, (_, i) => String(currentYear - i))
+
+  // Emit hidden input with YYYY-MM value
+  const value = m && y ? `${y}-${m}` : ''
+
+  return (
+    <div className="flex gap-2">
+      <input type="hidden" name={name} value={value} />
+      <select
+        value={m}
+        onChange={(e) => setM(e.target.value)}
+        aria-label="Month"
+        className="field-input flex-1"
+      >
+        <option value="">Month</option>
+        {MONTHS.map((mo) => (
+          <option key={mo.value} value={mo.value}>{mo.label}</option>
+        ))}
+      </select>
+      <select
+        value={y}
+        onChange={(e) => setY(e.target.value)}
+        aria-label="Year"
+        className="field-input flex-1"
+      >
+        <option value="">Year</option>
+        {years.map((yr) => (
+          <option key={yr} value={yr}>{yr}</option>
+        ))}
+      </select>
+    </div>
   )
 }

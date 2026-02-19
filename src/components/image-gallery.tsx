@@ -162,7 +162,8 @@ export function ImageGallery({ images, treeName, thumbnailId, onDelete, onSetThu
 }
 
 function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', {
+  const d = dateStr.length === 7 ? new Date(dateStr + '-01') : new Date(dateStr)
+  return d.toLocaleDateString('en-US', {
     month: 'short',
     year: 'numeric',
   })

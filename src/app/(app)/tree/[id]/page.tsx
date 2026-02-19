@@ -183,9 +183,10 @@ function MetaField({ label, value }: { label: string; value: string }) {
 }
 
 function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', {
+  // Dates stored as YYYY-MM; append -01 so Date can parse
+  const d = dateStr.length === 7 ? new Date(dateStr + '-01') : new Date(dateStr)
+  return d.toLocaleDateString('en-US', {
     month: 'short',
-    day: 'numeric',
     year: 'numeric',
   })
 }

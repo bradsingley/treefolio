@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { supabase } from '@/lib/supabase'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB
@@ -79,6 +80,9 @@ export async function POST(request: NextRequest) {
       { status: 500 },
     )
   }
+
+  revalidatePath('/')
+  revalidatePath(`/tree/${treeId}`)
 
   return NextResponse.json({ image }, { status: 201 })
 }

@@ -1,7 +1,9 @@
+import { ChatInterface } from '@/components/chat-interface'
+
 export default function ChatPage() {
   return (
     <div className="animate-fade-in">
-      <header className="mb-12">
+      <header className="mb-8">
         <h1 className="font-heading text-3xl font-semibold text-[var(--heading)]">
           Chat with Kodama
         </h1>
@@ -10,11 +12,7 @@ export default function ChatPage() {
         </p>
       </header>
 
-      <div className="flex min-h-[400px] flex-col items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] p-8">
-        <p className="text-sm text-[var(--muted)]">
-          Chat interface coming soon.
-        </p>
-      </div>
+      <ChatInterface />
     </div>
   );
 }

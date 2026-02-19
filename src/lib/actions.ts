@@ -5,10 +5,30 @@ import { redirect } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import type { TreeInsert, TreeUpdate } from '@/lib/types'
 
+async function resolveSpeciesId(formData: FormData): Promise<string | null> {
+  const speciesId = formData.get('species_id') as string
+  if (speciesId !== '__new__') return speciesId || null
+
+  const commonName = (formData.get('new_species_common') as string)?.trim()
+  const scientificName = (formData.get('new_species_scientific') as string)?.trim()
+  if (!commonName || !scientificName) return null
+
+  const { data, error } = await supabase
+    .from('tf_species')
+    .insert({ common_name: commonName, scientific_name: scientificName })
+    .select('id')
+    .single()
+
+  if (error) throw error
+  return data.id
+}
+
 export async function createTreeAction(formData: FormData) {
+  const speciesId = await resolveSpeciesId(formData)
+
   const tree: TreeInsert = {
     name: formData.get('name') as string,
-    species_id: (formData.get('species_id') as string) || null,
+    species_id: speciesId,
     age_years: formData.get('age_years') ? Number(formData.get('age_years')) : null,
     acquired_date: (formData.get('acquired_date') as string) || null,
     source: (formData.get('source') as string) || null,
@@ -32,9 +52,11 @@ export async function createTreeAction(formData: FormData) {
 }
 
 export async function updateTreeAction(id: string, formData: FormData) {
+  const speciesId = await resolveSpeciesId(formData)
+
   const updates: TreeUpdate = {
     name: formData.get('name') as string,
-    species_id: (formData.get('species_id') as string) || null,
+    species_id: speciesId,
     age_years: formData.get('age_years') ? Number(formData.get('age_years')) : null,
     acquired_date: (formData.get('acquired_date') as string) || null,
     source: (formData.get('source') as string) || null,

@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import type { Species, Tree } from '@/lib/types'
 
 interface TreeFormProps {
@@ -35,6 +36,12 @@ const sizeClasses = [
 const sources = ['nursery', 'collected', 'gift', 'seed', 'cutting', 'auction', 'club']
 
 export function TreeForm({ species, action, defaultValues, submitLabel = 'Add Tree' }: TreeFormProps) {
+  const [addingNewSpecies, setAddingNewSpecies] = useState(false)
+
+  const handleSpeciesChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setAddingNewSpecies(e.target.value === '__new__')
+  }
+
   return (
     <form action={action} className="space-y-6">
       {/* Name */}
@@ -51,15 +58,46 @@ export function TreeForm({ species, action, defaultValues, submitLabel = 'Add Tr
 
       {/* Species */}
       <Field label="Species">
-        <select name="species_id" aria-label="Species" defaultValue={defaultValues?.species_id ?? ''} className="field-input">
+        <select
+          name="species_id"
+          aria-label="Species"
+          defaultValue={defaultValues?.species_id ?? ''}
+          onChange={handleSpeciesChange}
+          className="field-input"
+        >
           <option value="">Select a species…</option>
           {species.map((s) => (
             <option key={s.id} value={s.id}>
               {s.common_name} — {s.scientific_name}
             </option>
           ))}
+          <option value="__new__">+ Add new species…</option>
         </select>
       </Field>
+
+      {/* New species fields */}
+      {addingNewSpecies && (
+        <div className="grid grid-cols-2 gap-4 rounded-lg border border-dashed border-[var(--accent)]/40 bg-[var(--accent)]/5 p-4">
+          <Field label="Common name" required>
+            <input
+              name="new_species_common"
+              type="text"
+              required
+              placeholder="e.g. Japanese Maple"
+              className="field-input"
+            />
+          </Field>
+          <Field label="Scientific name" required>
+            <input
+              name="new_species_scientific"
+              type="text"
+              required
+              placeholder="e.g. Acer palmatum"
+              className="field-input"
+            />
+          </Field>
+        </div>
+      )}
 
       {/* Age + Acquired date — side by side */}
       <div className="grid grid-cols-2 gap-4">

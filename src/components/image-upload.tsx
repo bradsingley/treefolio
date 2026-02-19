@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
+import exifr from 'exifr'
 import type { TreeImage } from '@/lib/types'
 
 interface ImageUploadProps {
@@ -44,7 +45,7 @@ export function ImageUpload({ treeId, onUploaded }: ImageUploadProps) {
     if (fileInputRef.current) fileInputRef.current.value = ''
   }, [])
 
-  const handleFile = useCallback((file: File) => {
+  const handleFile = useCallback(async (file: File) => {
     setError(null)
 
     if (!file.type.startsWith('image/')) {
@@ -58,6 +59,20 @@ export function ImageUpload({ treeId, onUploaded }: ImageUploadProps) {
     }
 
     setSelectedFile(file)
+
+    // Extract EXIF capture date
+    try {
+      const exif = await exifr.parse(file, ['DateTimeOriginal', 'CreateDate', 'DateTimeDigitized'])
+      const exifDate = exif?.DateTimeOriginal ?? exif?.CreateDate ?? exif?.DateTimeDigitized
+      if (exifDate instanceof Date && !isNaN(exifDate.getTime())) {
+        const yyyy = exifDate.getFullYear()
+        const mm = String(exifDate.getMonth() + 1).padStart(2, '0')
+        const dd = String(exifDate.getDate()).padStart(2, '0')
+        setTakenAt(`${yyyy}-${mm}-${dd}`)
+      }
+    } catch {
+      // EXIF extraction is best-effort — ignore failures
+    }
 
     const reader = new FileReader()
     reader.onload = (e) => setPreview(e.target?.result as string)

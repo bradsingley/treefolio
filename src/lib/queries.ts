@@ -55,7 +55,7 @@ export async function getTrees(): Promise<TreeWithSpecies[]> {
     .select('*, species:tf_species(*), images:tf_tree_images!tf_tree_images_tree_id_fkey(*)')
     .eq('is_active', true)
     .order('name')
-    .order('taken_at', { referencedTable: 'tf_tree_images!tf_tree_images_tree_id_fkey', ascending: false })
+    .order('taken_at', { referencedTable: 'images', ascending: false })
   if (error) throw error
   return data as TreeWithSpecies[]
 }
@@ -66,7 +66,7 @@ export async function getTreeById(id: string): Promise<TreeDetail | null> {
     .select('*, species:tf_species(*), images:tf_tree_images!tf_tree_images_tree_id_fkey(*), journal:tf_journal_entries(*)')
     .eq('id', id)
     .order('created_at', { referencedTable: 'tf_journal_entries', ascending: false })
-    .order('uploaded_at', { referencedTable: 'tf_tree_images!tf_tree_images_tree_id_fkey', ascending: false })
+    .order('uploaded_at', { referencedTable: 'images', ascending: false })
     .single()
   if (error) throw error
   return data as TreeDetail

@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { getTreeById } from '@/lib/queries'
 import { PhotosSection } from '@/components/photos-section'
 import { JournalSection } from '@/components/journal-section'
-import { CareCalendarCard } from '@/components/care-calendar-card'
+import { CareCalendarSection } from '@/components/care-calendar-section'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -125,7 +125,7 @@ export default async function TreeDetailPage({ params }: Props) {
         <aside>
           <SectionHeading>Care Calendar</SectionHeading>
           {tree.species ? (
-            <CareCalendarCard careCalendar={tree.species.care_calendar} />
+            <CareCalendarSection species={tree.species} />
           ) : (
             <div className="flex h-32 items-center justify-center rounded-xl border-2 border-dashed border-[var(--border)]">
               <p className="text-sm text-[var(--muted)]">No species assigned</p>

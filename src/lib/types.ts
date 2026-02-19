@@ -135,6 +135,17 @@ export type SpeciesUpdate = Partial<Omit<Species, 'id' | 'created_at'>>
 export type TreeImageUpdate = Partial<Omit<TreeImage, 'id' | 'uploaded_at'>>
 export type JournalEntryUpdate = Partial<Omit<JournalEntry, 'id' | 'created_at'>>
 
+// ─── Helpers ─────────────────────────────────────────────────
+
+/** Compute current age from age-at-acquisition + acquired month. */
+export function currentAge(ageAtAcquisition: number | null, acquiredDate: string | null): number | null {
+  if (ageAtAcquisition == null) return null
+  if (!acquiredDate) return ageAtAcquisition
+  const acquired = new Date(acquiredDate.length === 7 ? acquiredDate + '-01' : acquiredDate)
+  const elapsed = (Date.now() - acquired.getTime()) / (365.25 * 24 * 60 * 60 * 1000)
+  return Math.max(ageAtAcquisition, Math.round(ageAtAcquisition + elapsed))
+}
+
 // ─── Joined / composite types ────────────────────────────────
 
 export interface TreeWithSpecies extends Tree {

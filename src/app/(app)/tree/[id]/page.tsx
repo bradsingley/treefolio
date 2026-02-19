@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getTreeById } from '@/lib/queries'
+import { currentAge } from '@/lib/types'
 import { PhotosSection } from '@/components/photos-section'
 import { JournalSection } from '@/components/journal-section'
 import { CareCalendarSection } from '@/components/care-calendar-section'
@@ -16,6 +17,7 @@ export default async function TreeDetailPage({ params }: Props) {
   if (!tree) notFound()
 
   const heroImage = tree.images?.find((img) => img.id === tree.thumbnail_image_id) ?? tree.images?.[0]
+  const treeAge = currentAge(tree.age_years, tree.acquired_date)
 
   return (
     <div className="animate-fade-in">
@@ -76,8 +78,8 @@ export default async function TreeDetailPage({ params }: Props) {
 
           {/* Metadata */}
           <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-            {tree.age_years != null && (
-              <MetaField label="Age" value={`${tree.age_years} year${tree.age_years !== 1 ? 's' : ''}`} />
+            {treeAge != null && (
+              <MetaField label="Age" value={`${treeAge} year${treeAge !== 1 ? 's' : ''}`} />
             )}
             {tree.style && <MetaField label="Style" value={tree.style} />}
             {tree.size_class && <MetaField label="Size" value={tree.size_class} />}

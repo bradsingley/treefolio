@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { ai } from '@/lib/ai'
 import { supabase } from '@/lib/supabase'
 import { fetchWeather } from '@/lib/weather'
+import { currentAge } from '@/lib/types'
 import type { TreeWithSpecies, CareCalendar } from '@/lib/types'
 
 export async function POST(request: NextRequest) {
@@ -52,7 +53,7 @@ export async function POST(request: NextRequest) {
       scientific_name: t.species?.scientific_name ?? '',
       style: t.style,
       size_class: t.size_class,
-      age_years: t.age_years,
+      age_years: currentAge(t.age_years, t.acquired_date),
       care_this_month: monthTasks,
     }
   })

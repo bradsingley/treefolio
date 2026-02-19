@@ -101,13 +101,13 @@ export function TreeForm({ species, action, defaultValues, submitLabel = 'Add Tr
 
       {/* Age + Acquired date — side by side */}
       <div className="grid grid-cols-2 gap-4">
-        <Field label="Age (years)">
+        <Field label="Age at acquisition">
           <input
             name="age_years"
             type="number"
             min={0}
             defaultValue={defaultValues?.age_years ?? ''}
-            placeholder="Estimated"
+            placeholder="Estimated years"
             className="field-input"
           />
         </Field>

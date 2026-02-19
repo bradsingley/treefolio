@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import { ai } from '@/lib/ai'
 import { supabase } from '@/lib/supabase'
+import { currentAge } from '@/lib/types'
 import type { TreeWithSpecies, CareCalendar } from '@/lib/types'
 
 const MONTH_KEYS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'] as const
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
   const treeList = treesCast.map((t) => {
     const cal = t.species?.care_calendar as CareCalendar | undefined
     const monthTasks = cal?.[currentMonth] ?? []
-    return `- **${t.name}** [species_id: ${t.species?.id ?? 'none'}]: ${t.species?.common_name ?? 'Unknown'} (${t.species?.scientific_name ?? ''}), ${t.age_years ?? '?'} years, ${t.style ?? 'unspecified style'}. This month: ${monthTasks.join(', ') || 'nothing scheduled'}`
+    return `- **${t.name}** [species_id: ${t.species?.id ?? 'none'}]: ${t.species?.common_name ?? 'Unknown'} (${t.species?.scientific_name ?? ''}), ${currentAge(t.age_years, t.acquired_date) ?? '?'} years, ${t.style ?? 'unspecified style'}. This month: ${monthTasks.join(', ') || 'nothing scheduled'}`
   }).join('\n')
 
   // Build a species lookup so the extraction call can identify species

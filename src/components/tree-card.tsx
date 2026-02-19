@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { currentAge } from '@/lib/types'
 import type { TreeWithSpecies } from '@/lib/types'
 
 interface TreeCardProps {
@@ -7,6 +8,7 @@ interface TreeCardProps {
 
 export function TreeCard({ tree }: TreeCardProps) {
   const heroImage = tree.images?.find((img) => img.id === tree.thumbnail_image_id) ?? tree.images?.[0]
+  const displayAge = currentAge(tree.age_years, tree.acquired_date)
 
   return (
     <Link
@@ -42,8 +44,8 @@ export function TreeCard({ tree }: TreeCardProps) {
         </h3>
 
         <div className="flex items-center gap-3 text-xs text-[var(--muted)]">
-          {tree.age_years != null && (
-            <span>{tree.age_years} yr{tree.age_years !== 1 ? 's' : ''}</span>
+          {displayAge != null && (
+            <span>{displayAge} yr{displayAge !== 1 ? 's' : ''}</span>
           )}
           {tree.style && <span className="capitalize">{tree.style}</span>}
           {tree.size_class && (

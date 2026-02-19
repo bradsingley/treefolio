@@ -52,10 +52,10 @@ export async function getSpeciesByName(scientificName: string): Promise<Species 
 export async function getTrees(): Promise<TreeWithSpecies[]> {
   const { data, error } = await supabase
     .from('tf_trees')
-    .select('*, species:tf_species(*), images:tf_tree_images(*)')
+    .select('*, species:tf_species(*), images:tf_tree_images!tf_tree_images_tree_id_fkey(*)')
     .eq('is_active', true)
     .order('name')
-    .order('taken_at', { referencedTable: 'tf_tree_images', ascending: false })
+    .order('taken_at', { referencedTable: 'tf_tree_images!tf_tree_images_tree_id_fkey', ascending: false })
   if (error) throw error
   return data as TreeWithSpecies[]
 }
@@ -63,10 +63,10 @@ export async function getTrees(): Promise<TreeWithSpecies[]> {
 export async function getTreeById(id: string): Promise<TreeDetail | null> {
   const { data, error } = await supabase
     .from('tf_trees')
-    .select('*, species:tf_species(*), images:tf_tree_images(*), journal:tf_journal_entries(*)')
+    .select('*, species:tf_species(*), images:tf_tree_images!tf_tree_images_tree_id_fkey(*), journal:tf_journal_entries(*)')
     .eq('id', id)
     .order('created_at', { referencedTable: 'tf_journal_entries', ascending: false })
-    .order('uploaded_at', { referencedTable: 'tf_tree_images', ascending: false })
+    .order('uploaded_at', { referencedTable: 'tf_tree_images!tf_tree_images_tree_id_fkey', ascending: false })
     .single()
   if (error) throw error
   return data as TreeDetail

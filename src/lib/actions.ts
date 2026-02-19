@@ -109,6 +109,18 @@ export async function addJournalEntryAction(formData: FormData) {
   revalidatePath(`/tree/${treeId}`)
 }
 
+export async function setThumbnailAction(treeId: string, imageId: string | null) {
+  const { error } = await supabase
+    .from('tf_trees')
+    .update({ thumbnail_image_id: imageId })
+    .eq('id', treeId)
+
+  if (error) throw error
+
+  revalidatePath('/')
+  revalidatePath(`/tree/${treeId}`)
+}
+
 export async function deleteImageAction(imageId: string, treeId: string) {
   // Get the image record to find the storage path
   const { data: image, error: fetchError } = await supabase
@@ -126,6 +138,13 @@ export async function deleteImageAction(imageId: string, treeId: string) {
     await supabase.storage.from('treefolio').remove([pathParts[1]])
   }
 
+  // If this image was the thumbnail, clear it
+  await supabase
+    .from('tf_trees')
+    .update({ thumbnail_image_id: null })
+    .eq('id', treeId)
+    .eq('thumbnail_image_id', imageId)
+
   // Delete the database record
   const { error } = await supabase
     .from('tf_tree_images')
@@ -134,5 +153,6 @@ export async function deleteImageAction(imageId: string, treeId: string) {
 
   if (error) throw error
 
+  revalidatePath('/')
   revalidatePath(`/tree/${treeId}`)
 }

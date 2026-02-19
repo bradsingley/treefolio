@@ -15,7 +15,7 @@ export default async function TreeDetailPage({ params }: Props) {
 
   if (!tree) notFound()
 
-  const heroImage = tree.images?.[0]
+  const heroImage = tree.images?.find((img) => img.id === tree.thumbnail_image_id) ?? tree.images?.[0]
 
   return (
     <div className="animate-fade-in">
@@ -107,6 +107,7 @@ export default async function TreeDetailPage({ params }: Props) {
               treeId={id}
               treeName={tree.name}
               initialImages={tree.images ?? []}
+              thumbnailId={tree.thumbnail_image_id}
             />
           </section>
 

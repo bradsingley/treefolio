@@ -51,6 +51,7 @@ export interface Tree {
   pot_type: string | null
   soil_mix: string | null
   description: string | null
+  thumbnail_image_id: string | null
   is_active: boolean
   created_at: string
   updated_at: string

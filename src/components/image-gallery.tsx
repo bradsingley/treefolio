@@ -6,11 +6,13 @@ import type { TreeImage } from '@/lib/types'
 interface ImageGalleryProps {
   images: TreeImage[]
   treeName: string
+  thumbnailId?: string | null
   onDelete?: (imageId: string) => void
+  onSetThumbnail?: (imageId: string | null) => void
   deletingId?: string | null
 }
 
-export function ImageGallery({ images, treeName, onDelete, deletingId }: ImageGalleryProps) {
+export function ImageGallery({ images, treeName, thumbnailId, onDelete, onSetThumbnail, deletingId }: ImageGalleryProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
 
   if (images.length === 0) {
@@ -36,6 +38,12 @@ export function ImageGallery({ images, treeName, onDelete, deletingId }: ImageGa
               alt={image.caption ?? `${treeName} photo`}
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.05]"
             />
+            {thumbnailId === image.id && (
+              <span className="absolute top-1.5 left-1.5 flex items-center gap-1 rounded bg-[var(--accent)]/90 px-1.5 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">
+                <StarIcon className="h-3 w-3" />
+                Thumbnail
+              </span>
+            )}
             {image.taken_at && (
               <span className="absolute bottom-1.5 left-1.5 rounded bg-[var(--background)]/80 px-1.5 py-0.5 text-[10px] text-[var(--muted)] backdrop-blur-sm">
                 {formatDate(image.taken_at)}
@@ -97,22 +105,43 @@ export function ImageGallery({ images, treeName, onDelete, deletingId }: ImageGa
               {images[selectedIndex].taken_at && (
                 <p className="mt-1 text-xs text-white/50">{formatDate(images[selectedIndex].taken_at!)}</p>
               )}
-              {onDelete && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    const img = images[selectedIndex]
-                    setSelectedIndex(null)
-                    onDelete(img.id)
-                  }}
-                  disabled={deletingId === images[selectedIndex].id}
-                  className="mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs text-red-400 transition-colors hover:bg-red-500/20 hover:text-red-300 disabled:opacity-50"
-                  aria-label="Delete image"
-                >
-                  <TrashIcon className="h-3.5 w-3.5" />
-                  Delete
-                </button>
-              )}
+              <div className="mt-3 flex items-center justify-center gap-3">
+                {onSetThumbnail && (
+                  thumbnailId === images[selectedIndex].id ? (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onSetThumbnail(null) }}
+                      className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs text-[var(--accent)] transition-colors hover:bg-white/10"
+                    >
+                      <StarFilledIcon className="h-3.5 w-3.5" />
+                      Thumbnail
+                    </button>
+                  ) : (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onSetThumbnail(images[selectedIndex].id) }}
+                      className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+                    >
+                      <StarIcon className="h-3.5 w-3.5" />
+                      Set as thumbnail
+                    </button>
+                  )
+                )}
+                {onDelete && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      const img = images[selectedIndex]
+                      setSelectedIndex(null)
+                      onDelete(img.id)
+                    }}
+                    disabled={deletingId === images[selectedIndex].id}
+                    className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs text-red-400 transition-colors hover:bg-red-500/20 hover:text-red-300 disabled:opacity-50"
+                    aria-label="Delete image"
+                  >
+                    <TrashIcon className="h-3.5 w-3.5" />
+                    Delete
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
@@ -152,6 +181,22 @@ function ChevronIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className={className}>
       <polyline points="9 18 15 12 9 6" />
+    </svg>
+  )
+}
+
+function StarIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    </svg>
+  )
+}
+
+function StarFilledIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
     </svg>
   )
 }

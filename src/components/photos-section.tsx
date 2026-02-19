@@ -10,13 +10,15 @@ interface PhotosSectionProps {
   treeId: string
   treeName: string
   initialImages: TreeImage[]
+  thumbnailId: string | null
 }
 
-export function PhotosSection({ treeId, treeName, initialImages }: PhotosSectionProps) {
+export function PhotosSection({ treeId, treeName, initialImages, thumbnailId }: PhotosSectionProps) {
   const router = useRouter()
   const [images, setImages] = useState(initialImages)
   const [showUpload, setShowUpload] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [currentThumbnailId, setCurrentThumbnailId] = useState(thumbnailId)
 
   const handleUploaded = useCallback((image: TreeImage) => {
     setImages((prev) => [image, ...prev])
@@ -32,11 +34,23 @@ export function PhotosSection({ treeId, treeName, initialImages }: PhotosSection
       const { deleteImageAction } = await import('@/lib/actions')
       await deleteImageAction(imageId, treeId)
       setImages((prev) => prev.filter((img) => img.id !== imageId))
+      if (currentThumbnailId === imageId) setCurrentThumbnailId(null)
       router.refresh()
     } catch {
       alert('Failed to delete image')
     } finally {
       setDeletingId(null)
+    }
+  }, [treeId, router, currentThumbnailId])
+
+  const handleSetThumbnail = useCallback(async (imageId: string | null) => {
+    try {
+      const { setThumbnailAction } = await import('@/lib/actions')
+      await setThumbnailAction(treeId, imageId)
+      setCurrentThumbnailId(imageId)
+      router.refresh()
+    } catch {
+      alert('Failed to set thumbnail')
     }
   }, [treeId, router])
 
@@ -76,7 +90,9 @@ export function PhotosSection({ treeId, treeName, initialImages }: PhotosSection
       <ImageGallery
         images={images}
         treeName={treeName}
+        thumbnailId={currentThumbnailId}
         onDelete={handleDelete}
+        onSetThumbnail={handleSetThumbnail}
         deletingId={deletingId}
       />
     </div>

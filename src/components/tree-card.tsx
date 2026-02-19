@@ -6,7 +6,7 @@ interface TreeCardProps {
 }
 
 export function TreeCard({ tree }: TreeCardProps) {
-  const heroImage = tree.images?.[0]
+  const heroImage = tree.images?.find((img) => img.id === tree.thumbnail_image_id) ?? tree.images?.[0]
 
   return (
     <Link

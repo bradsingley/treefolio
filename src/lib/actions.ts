@@ -37,6 +37,7 @@ export async function createTreeAction(formData: FormData) {
     pot_type: (formData.get('pot_type') as string) || null,
     soil_mix: (formData.get('soil_mix') as string) || null,
     description: (formData.get('description') as string) || null,
+    thumbnail_image_id: null,
   }
 
   const { data, error } = await supabase

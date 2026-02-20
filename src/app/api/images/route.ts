@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       url: urlData.publicUrl,
       caption: caption || null,
       angle: angle || null,
-      taken_at: takenAt || null,
+      taken_at: takenAt ? (takenAt.length === 7 ? takenAt + '-01' : takenAt) : null,
     })
     .select()
     .single()

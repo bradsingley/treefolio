@@ -23,6 +23,12 @@ async function resolveSpeciesId(formData: FormData): Promise<string | null> {
   return data.id
 }
 
+/** Normalize YYYY-MM to YYYY-MM-01 for Postgres DATE columns. */
+function toDate(val: string | null): string | null {
+  if (!val) return null
+  return val.length === 7 ? val + '-01' : val
+}
+
 export async function createTreeAction(formData: FormData) {
   const speciesId = await resolveSpeciesId(formData)
 
@@ -30,7 +36,7 @@ export async function createTreeAction(formData: FormData) {
     name: formData.get('name') as string,
     species_id: speciesId,
     age_years: formData.get('age_years') ? Number(formData.get('age_years')) : null,
-    acquired_date: (formData.get('acquired_date') as string) || null,
+    acquired_date: toDate((formData.get('acquired_date') as string) || null),
     source: (formData.get('source') as string) || null,
     style: (formData.get('style') as string) || null,
     size_class: (formData.get('size_class') as string as TreeInsert['size_class']) || null,
@@ -59,7 +65,7 @@ export async function updateTreeAction(id: string, formData: FormData) {
     name: formData.get('name') as string,
     species_id: speciesId,
     age_years: formData.get('age_years') ? Number(formData.get('age_years')) : null,
-    acquired_date: (formData.get('acquired_date') as string) || null,
+    acquired_date: toDate((formData.get('acquired_date') as string) || null),
     source: (formData.get('source') as string) || null,
     style: (formData.get('style') as string) || null,
     size_class: (formData.get('size_class') as string as TreeUpdate['size_class']) || null,

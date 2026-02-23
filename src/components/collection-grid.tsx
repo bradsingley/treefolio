@@ -75,13 +75,14 @@ export function CollectionGrid({ trees }: CollectionGridProps) {
         <div className="mb-8 space-y-3">
           {/* Search bar */}
           <div className="relative">
-            <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted)]" />
+            <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted)]" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name or species…"
-              className="field-input pl-10"
+              className="field-input"
+              style={{ paddingLeft: '2.5rem' }}
               aria-label="Search trees"
             />
           </div>

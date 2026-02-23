@@ -48,9 +48,6 @@ export function TreeCard({ tree }: TreeCardProps) {
             <span>{displayAge} yr{displayAge !== 1 ? 's' : ''}</span>
           )}
           {tree.style && <span className="capitalize">{tree.style}</span>}
-          {tree.size_class && (
-            <span className="capitalize">{tree.size_class}</span>
-          )}
         </div>
 
         {tree.description && (

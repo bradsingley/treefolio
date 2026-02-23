@@ -37,7 +37,7 @@ export function CareCalendarCard({ careCalendar }: CareCalendarCardProps) {
           <h4 className={`text-sm font-medium ${month.isCurrent ? 'text-[var(--heading)]' : 'text-[var(--muted)]'}`}>
             {month.label}
             {month.isCurrent && (
-              <span className="ml-2 rounded-full bg-[var(--accent)] px-2 py-0.5 text-[10px] font-semibold text-white">
+              <span className="ml-2 rounded-full bg-[var(--accent)] px-2 py-0.5 text-[10px] font-semibold text-[var(--accent-fg)]">
                 Now
               </span>
             )}

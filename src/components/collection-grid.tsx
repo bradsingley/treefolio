@@ -81,7 +81,7 @@ export function CollectionGrid({ trees }: CollectionGridProps) {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name or species…"
-              className="field-input pl-9"
+              className="field-input pl-10"
               aria-label="Search trees"
             />
           </div>

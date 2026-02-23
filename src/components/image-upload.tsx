@@ -230,7 +230,7 @@ export function ImageUpload({ treeId, onUploaded }: ImageUploadProps) {
         <button
           onClick={handleUpload}
           disabled={state === 'uploading'}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50 sm:w-auto"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2.5 text-sm font-medium text-[var(--accent-fg)] transition-opacity hover:opacity-90 disabled:opacity-50 sm:w-auto"
         >
           {state === 'uploading' ? (
             <>

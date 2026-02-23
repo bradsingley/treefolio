@@ -172,7 +172,7 @@ export function ChatInterface() {
               <div
                 className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
                   msg.role === 'user'
-                    ? 'bg-[var(--accent)] text-white rounded-br-md'
+                    ? 'bg-[var(--accent)] text-[var(--accent-fg)] rounded-br-md'
                     : 'bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] rounded-bl-md'
                 }`}
               >
@@ -222,7 +222,7 @@ export function ChatInterface() {
           <button
             type="submit"
             disabled={streaming || !input.trim()}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--accent)] text-white transition-opacity hover:opacity-90 disabled:opacity-40"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--accent)] text-[var(--accent-fg)] transition-opacity hover:opacity-90 disabled:opacity-40"
             aria-label="Send message"
           >
             {streaming ? (
@@ -286,7 +286,7 @@ function CalendarSuggestionCard({
               <button
                 onClick={onSave}
                 disabled={saving}
-                className="inline-flex items-center gap-1.5 rounded-md bg-[var(--accent)] px-3 py-1 text-xs font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-md bg-[var(--accent)] px-3 py-1 text-xs font-medium text-[var(--accent-fg)] transition-opacity hover:opacity-90 disabled:opacity-50"
               >
                 {saving ? (
                   <SpinnerIcon className="h-3 w-3 animate-spin" />

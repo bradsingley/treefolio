@@ -103,7 +103,7 @@ export function JournalEntryForm({ treeId, onCreated }: JournalEntryFormProps) {
         <button
           type="submit"
           disabled={submitting}
-          className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--accent-fg)] transition-opacity hover:opacity-90 disabled:opacity-50"
         >
           {submitting ? 'Saving…' : 'Add Entry'}
         </button>

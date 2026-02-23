@@ -82,7 +82,6 @@ export default async function TreeDetailPage({ params }: Props) {
               <MetaField label="Age" value={`${treeAge} year${treeAge !== 1 ? 's' : ''}`} />
             )}
             {tree.style && <MetaField label="Style" value={tree.style} />}
-            {tree.size_class && <MetaField label="Size" value={tree.size_class} />}
             {tree.acquired_date && (
               <MetaField label="Acquired" value={formatDate(tree.acquired_date)} />
             )}

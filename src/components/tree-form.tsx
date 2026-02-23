@@ -186,7 +186,7 @@ export function TreeForm({ species, action, defaultValues, submitLabel = 'Add Tr
       <div className="flex items-center gap-4 pt-2">
         <button
           type="submit"
-          className="rounded-lg bg-[var(--accent)] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--background)]"
+          className="rounded-lg bg-[var(--accent)] px-6 py-2.5 text-sm font-medium text-[var(--accent-fg)] transition-colors hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 focus:ring-offset-[var(--background)]"
         >
           {submitLabel}
         </button>

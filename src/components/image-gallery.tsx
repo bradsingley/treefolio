@@ -39,7 +39,7 @@ export function ImageGallery({ images, treeName, thumbnailId, onDelete, onSetThu
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.05]"
             />
             {thumbnailId === image.id && (
-              <span className="absolute top-1.5 left-1.5 flex items-center gap-1 rounded bg-[var(--accent)]/90 px-1.5 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">
+              <span className="absolute top-1.5 left-1.5 flex items-center gap-1 rounded bg-[var(--accent)]/90 px-1.5 py-0.5 text-[10px] font-medium text-[var(--accent-fg)] backdrop-blur-sm">
                 <StarIcon className="h-3 w-3" />
                 Thumbnail
               </span>

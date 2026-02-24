@@ -109,8 +109,9 @@ function LeafIcon({ className }: { className?: string }) {
       strokeLinejoin="round"
       className={className}
     >
-      <path d="M12 2C6.5 2 2 6.5 2 12c0 5 4 8 10 10 0-6 0-10 0-10S20 6 12 2Z" />
-      <path d="M12 22c0-6 0-10 0-10" />
+      <path d="M12 22V8" />
+      <path d="M5 12s1-6 7-10c6 4 7 10 7 10" />
+      <path d="M7 16s1-4 5-7c4 3 5 7 5 7" />
     </svg>
   );
 }

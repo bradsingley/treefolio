@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
+import Markdown from 'react-markdown'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -177,15 +178,17 @@ export function ChatInterface() {
                 }`}
               >
                 {msg.role === 'assistant' ? (
-                  <div className="prose prose-sm max-w-none dark:prose-invert whitespace-pre-wrap">
-                    {msg.content || (streaming && i === messages.length - 1 ? (
-                      <span className="inline-flex gap-1 text-[var(--muted)]">
-                        <span className="animate-bounce">·</span>
-                        <span className="animate-bounce [animation-delay:150ms]">·</span>
-                        <span className="animate-bounce [animation-delay:300ms]">·</span>
-                      </span>
-                    ) : '')}
-                  </div>
+                  msg.content ? (
+                    <div className="prose prose-sm max-w-none dark:prose-invert [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+                      <Markdown>{msg.content}</Markdown>
+                    </div>
+                  ) : streaming && i === messages.length - 1 ? (
+                    <span className="inline-flex gap-1 text-[var(--muted)]">
+                      <span className="animate-bounce">·</span>
+                      <span className="animate-bounce [animation-delay:150ms]">·</span>
+                      <span className="animate-bounce [animation-delay:300ms]">·</span>
+                    </span>
+                  ) : null
                 ) : (
                   msg.content
                 )}

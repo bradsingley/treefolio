@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 /* ─── Treefolio Design Tokens ─── */
 
@@ -181,4 +182,26 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--muted);
+}
+
+/* ─── Prose overrides for chat bubbles ─── */
+
+.prose {
+  --tw-prose-body: var(--foreground);
+  --tw-prose-headings: var(--heading);
+  --tw-prose-bold: var(--heading);
+  --tw-prose-bullets: var(--muted);
+  --tw-prose-counters: var(--muted);
+  --tw-prose-code: var(--heading);
+  --tw-prose-hr: var(--border);
+}
+
+.dark .prose {
+  --tw-prose-invert-body: var(--foreground);
+  --tw-prose-invert-headings: var(--heading);
+  --tw-prose-invert-bold: var(--heading);
+  --tw-prose-invert-bullets: var(--muted);
+  --tw-prose-invert-counters: var(--muted);
+  --tw-prose-invert-code: var(--heading);
+  --tw-prose-invert-hr: var(--border);
 }

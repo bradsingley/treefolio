@@ -6,7 +6,7 @@ const PUBLIC_ORIGIN =
   (process.env.VERCEL_PROJECT_PRODUCTION_URL
     ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
     : 'https://treefolio.vercel.app')
-const publicRoutes = ['/login', '/signup', '/api/debug-auth']
+const publicRoutes = ['/login', '/signup']
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -15,28 +15,17 @@ export async function middleware(request: NextRequest) {
   const cookieHeader = request.headers.get('cookie') ?? ''
 
   let user: { id: string; email: string } | null = null
-  let debugStatus: number | string = 'no-fetch'
   try {
     const res = await fetch(`${API_BASE}/me`, {
       headers: { Cookie: cookieHeader, Origin: PUBLIC_ORIGIN },
       cache: 'no-store',
     })
-    debugStatus = res.status
     if (res.ok) {
       const data = await res.json()
       user = data.user ?? null
     }
-  } catch (err) {
-    debugStatus = `error: ${err instanceof Error ? err.message : String(err)}`
-  }
-
-  // Diagnostic: surface auth resolution as response headers so we can debug
-  // without reading edge logs. Remove once verified.
-  const debugHeaders = {
-    'x-tf-mw-status': String(debugStatus),
-    'x-tf-mw-user': user ? user.id : 'null',
-    'x-tf-mw-cookie-len': String(cookieHeader.length),
-    'x-tf-mw-origin': PUBLIC_ORIGIN,
+  } catch {
+    // API unreachable — allow through to avoid blocking the entire app
   }
 
   // Allow public routes
@@ -44,27 +33,19 @@ export async function middleware(request: NextRequest) {
     if (user && (pathname === '/login' || pathname === '/signup')) {
       const url = request.nextUrl.clone()
       url.pathname = '/'
-      const r = NextResponse.redirect(url)
-      Object.entries(debugHeaders).forEach(([k, v]) => r.headers.set(k, v))
-      return r
+      return NextResponse.redirect(url)
     }
-    const r = NextResponse.next()
-    Object.entries(debugHeaders).forEach(([k, v]) => r.headers.set(k, v))
-    return r
+    return NextResponse.next()
   }
 
   // Protect all other routes
   if (!user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
-    const r = NextResponse.redirect(url)
-    Object.entries(debugHeaders).forEach(([k, v]) => r.headers.set(k, v))
-    return r
+    return NextResponse.redirect(url)
   }
 
-  const r = NextResponse.next()
-  Object.entries(debugHeaders).forEach(([k, v]) => r.headers.set(k, v))
-  return r
+  return NextResponse.next()
 }
 
 export const config = {

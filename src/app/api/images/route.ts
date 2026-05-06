@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { cookies } from 'next/headers'
+import { API_BASE, PUBLIC_ORIGIN } from '@/lib/api-client'
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.bradsingley.com'
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic']
 
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
   // 1. Get a signed upload URL from lab-api
   const uploadUrlRes = await fetch(`${API_BASE}/treefolio/upload-url`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Cookie: cookieHeader },
+    headers: { 'Content-Type': 'application/json', Cookie: cookieHeader, Origin: PUBLIC_ORIGIN },
     body: JSON.stringify({ treeId, filename: file.name, contentType: file.type }),
   })
 
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
   // 3. Create the image record in the database via lab-api
   const imageRes = await fetch(`${API_BASE}/treefolio/trees/${treeId}/images`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Cookie: cookieHeader },
+    headers: { 'Content-Type': 'application/json', Cookie: cookieHeader, Origin: PUBLIC_ORIGIN },
     body: JSON.stringify({
       url: storagePath,
       caption: caption || null,

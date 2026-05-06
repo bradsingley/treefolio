@@ -11,8 +11,11 @@ const navItems = [
   { href: "/chat", label: "Chat", icon: ChatIcon },
 ];
 
-export function Sidebar() {
+export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
   const pathname = usePathname();
+  const items = isAdmin
+    ? [...navItems, { href: "/admin", label: "Admin", icon: ShieldIcon }]
+    : navItems;
 
   return (
     <>
@@ -27,7 +30,7 @@ export function Sidebar() {
 
         <nav className="flex-1 px-3 py-2">
           <ul className="space-y-1">
-            {navItems.map((item) => {
+            {items.map((item) => {
               const isActive = pathname === item.href;
               return (
                 <li key={item.href}>
@@ -64,7 +67,7 @@ export function Sidebar() {
 
       {/* Mobile bottom nav */}
       <nav className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-around border-t border-[var(--border)] bg-[var(--surface)]/95 py-2 pb-[env(safe-area-inset-bottom)] backdrop-blur-md transition-colors duration-300 md:hidden">
-        {navItems.map((item) => {
+        {items.map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link
@@ -189,6 +192,23 @@ function CalendarIcon({ className }: { className?: string }) {
       <line x1="16" y1="2" x2="16" y2="6" />
       <line x1="8" y1="2" x2="8" y2="6" />
       <line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
+  );
+}
+
+function ShieldIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
     </svg>
   );
 }

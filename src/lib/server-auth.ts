@@ -13,6 +13,7 @@ import { API_BASE, PUBLIC_ORIGIN } from './api-client'
 export async function getCurrentUser(): Promise<{
   id: string
   email: string
+  role?: string
 } | null> {
   const cookieStore = await cookies()
   const cookieHeader = cookieStore

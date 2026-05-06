@@ -1,11 +1,15 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { signupAction } from '@/lib/auth-actions'
+import { getCurrentUser } from '@/lib/server-auth'
 
 interface Props {
   searchParams: Promise<{ error?: string }>
 }
 
 export default async function SignupPage({ searchParams }: Props) {
+  const user = await getCurrentUser()
+  if (user) redirect('/')
   const { error } = await searchParams
 
   return (

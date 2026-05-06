@@ -1,11 +1,15 @@
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { loginAction } from '@/lib/auth-actions'
+import { getCurrentUser } from '@/lib/server-auth'
 
 interface Props {
   searchParams: Promise<{ error?: string; message?: string }>
 }
 
 export default async function LoginPage({ searchParams }: Props) {
+  const user = await getCurrentUser()
+  if (user) redirect('/')
   const { error, message } = await searchParams
 
   return (

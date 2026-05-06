@@ -1,10 +1,15 @@
+import { redirect } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
+import { getCurrentUser } from "@/lib/server-auth";
 
-export default function AppLayout({
+export default async function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
   return (
     <div className="flex min-h-screen">
       <Sidebar />

@@ -13,9 +13,6 @@ const navItems = [
 
 export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
   const pathname = usePathname();
-  const items = isAdmin
-    ? [...navItems, { href: "/admin", label: "Admin", icon: ShieldIcon }]
-    : navItems;
 
   return (
     <>
@@ -31,7 +28,7 @@ export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
 
         <nav className="flex-1 px-3 py-2">
           <ul className="space-y-1">
-            {items.map((item) => {
+            {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
                 <li key={item.href}>
@@ -53,6 +50,17 @@ export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
         </nav>
 
         <div className="border-t border-[var(--border)] px-4 py-4 space-y-2">
+          {isAdmin && (
+            <a
+              href="https://api.bradsingley.com/admin"
+              target="_blank"
+              rel="noreferrer"
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-[var(--muted)] transition-colors hover:bg-[var(--background)] hover:text-[var(--foreground)]"
+            >
+              <ShieldIcon className="h-4 w-4" />
+              Admin
+            </a>
+          )}
           <ThemeToggle />
           <form action={logoutAction}>
             <button
@@ -68,7 +76,7 @@ export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
 
       {/* Mobile bottom nav */}
       <nav className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-around border-t border-[var(--border)] bg-[var(--surface)]/95 py-2 pb-[env(safe-area-inset-bottom)] backdrop-blur-md transition-colors duration-300 md:hidden">
-        {items.map((item) => {
+        {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link

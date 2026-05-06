@@ -19,8 +19,9 @@ export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
 
   return (
     <>
-      {/* Desktop sidebar */}
-      <aside className="hidden md:flex w-60 flex-col border-r border-[var(--border)] bg-[var(--surface)] transition-colors duration-300">
+      {/* Desktop sidebar — sticky to viewport so footer (theme + sign out)
+          stays visible without scrolling. */}
+      <aside className="hidden md:flex sticky top-0 h-screen w-60 shrink-0 flex-col border-r border-[var(--border)] bg-[var(--surface)] transition-colors duration-300">
         <div className="flex items-center gap-2 px-6 py-6">
           <LeafIcon className="h-6 w-6 text-[var(--accent)]" />
           <span className="font-heading text-xl font-semibold text-[var(--heading)]">

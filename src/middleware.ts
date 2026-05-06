@@ -93,6 +93,11 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
+  // Use Node.js runtime so we can forward the Cookie header to the API.
+  // Edge runtime's fetch silently strips `Cookie` (it's a forbidden header
+  // name per the browser fetch spec), which broke /me lookups in this
+  // middleware and bounced users to /login on every navigation.
+  runtime: 'nodejs',
   matcher: [
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],

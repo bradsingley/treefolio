@@ -6,7 +6,7 @@ const PUBLIC_ORIGIN =
   (process.env.VERCEL_PROJECT_PRODUCTION_URL
     ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
     : 'https://treefolio.vercel.app')
-const publicRoutes = ['/login', '/signup']
+const publicRoutes = ['/login', '/signup', '/api/debug-auth']
 
 /**
  * Extract only the cookies that lab-api cares about. Stale Supabase cookies

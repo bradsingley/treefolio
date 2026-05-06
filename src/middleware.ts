@@ -63,6 +63,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   })()
 
+  // Diagnostic headers (will appear on every middleware response). Tells us
+  // exactly what the edge runtime saw for this request.
+  response.headers.set('x-tf-mw-cookie-len', String(cookieHeader.length))
+  response.headers.set('x-tf-mw-raw-cookie-len', String(rawCookies.length))
+  response.headers.set('x-tf-mw-user', user ? user.id : 'null')
+  response.headers.set('x-tf-mw-cookie-names', rawCookies.split(/;\s*/).map((c) => c.split('=')[0]?.trim()).filter(Boolean).join(','))
+  response.headers.set('x-tf-mw-pathname', pathname)
+
   // Expire any stale Supabase cookies once.
   for (const cookie of rawCookies.split(/;\s*/)) {
     const name = cookie.split('=')[0]?.trim()

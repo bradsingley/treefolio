@@ -15,17 +15,28 @@ export async function middleware(request: NextRequest) {
   const cookieHeader = request.headers.get('cookie') ?? ''
 
   let user: { id: string; email: string } | null = null
+  let debugStatus: number | string = 'no-fetch'
   try {
     const res = await fetch(`${API_BASE}/me`, {
       headers: { Cookie: cookieHeader, Origin: PUBLIC_ORIGIN },
       cache: 'no-store',
     })
+    debugStatus = res.status
     if (res.ok) {
       const data = await res.json()
       user = data.user ?? null
     }
-  } catch {
-    // API unreachable — allow through to avoid blocking the entire app
+  } catch (err) {
+    debugStatus = `error: ${err instanceof Error ? err.message : String(err)}`
+  }
+
+  // Diagnostic: surface auth resolution as response headers so we can debug
+  // without reading edge logs. Remove once verified.
+  const debugHeaders = {
+    'x-tf-mw-status': String(debugStatus),
+    'x-tf-mw-user': user ? user.id : 'null',
+    'x-tf-mw-cookie-len': String(cookieHeader.length),
+    'x-tf-mw-origin': PUBLIC_ORIGIN,
   }
 
   // Allow public routes
@@ -33,19 +44,27 @@ export async function middleware(request: NextRequest) {
     if (user && (pathname === '/login' || pathname === '/signup')) {
       const url = request.nextUrl.clone()
       url.pathname = '/'
-      return NextResponse.redirect(url)
+      const r = NextResponse.redirect(url)
+      Object.entries(debugHeaders).forEach(([k, v]) => r.headers.set(k, v))
+      return r
     }
-    return NextResponse.next()
+    const r = NextResponse.next()
+    Object.entries(debugHeaders).forEach(([k, v]) => r.headers.set(k, v))
+    return r
   }
 
   // Protect all other routes
   if (!user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
-    return NextResponse.redirect(url)
+    const r = NextResponse.redirect(url)
+    Object.entries(debugHeaders).forEach(([k, v]) => r.headers.set(k, v))
+    return r
   }
 
-  return NextResponse.next()
+  const r = NextResponse.next()
+  Object.entries(debugHeaders).forEach(([k, v]) => r.headers.set(k, v))
+  return r
 }
 
 export const config = {

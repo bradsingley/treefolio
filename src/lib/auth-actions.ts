@@ -93,8 +93,18 @@ export async function logoutAction() {
       Cookie: cookieHeader,
       Origin: PUBLIC_ORIGIN,
     },
+    body: '{}',
     credentials: 'include',
   })
+
+  // Clear the better-auth cookies on this host. The Set-Cookie response from
+  // the API targets `Domain=.bradsingley.com` which the browser won't accept
+  // on `treefolio.vercel.app`, so we expire the host-only copies ourselves.
+  for (const c of cookieStore.getAll()) {
+    if (c.name.includes('lab.session') || c.name.includes('lab.csrf')) {
+      cookieStore.set(c.name, '', { maxAge: 0, path: '/' })
+    }
+  }
 
   revalidatePath('/', 'layout')
   redirect('/login')

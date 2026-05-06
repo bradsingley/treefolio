@@ -30,17 +30,26 @@ export async function middleware(request: NextRequest) {
   const cookieHeader = filterAuthCookies(rawCookies)
 
   let user: { id: string; email: string } | null = null
+  let meStatus: number | string = 'no-fetch'
   try {
     const res = await fetch(`${API_BASE}/me`, {
-      headers: { Cookie: cookieHeader, Origin: PUBLIC_ORIGIN },
+      headers: {
+        Cookie: cookieHeader,
+        // Edge runtime fetch silently strips `Origin`, but accepts custom
+        // headers. lab-api falls back to `x-forwarded-origin` when better-auth
+        // CSRF rejects a missing Origin. (see auth/index.ts trust override).
+        Origin: PUBLIC_ORIGIN,
+        'x-forwarded-origin': PUBLIC_ORIGIN,
+      },
       cache: 'no-store',
     })
+    meStatus = res.status
     if (res.ok) {
       const data = await res.json()
       user = data.user ?? null
     }
-  } catch {
-    // API unreachable — allow through to avoid blocking the entire app
+  } catch (err) {
+    meStatus = `err:${err instanceof Error ? err.message : String(err)}`
   }
 
   // If we detect the legacy Supabase cookie, expire it. The user may have
@@ -68,6 +77,7 @@ export async function middleware(request: NextRequest) {
   response.headers.set('x-tf-mw-cookie-len', String(cookieHeader.length))
   response.headers.set('x-tf-mw-raw-cookie-len', String(rawCookies.length))
   response.headers.set('x-tf-mw-user', user ? user.id : 'null')
+  response.headers.set('x-tf-mw-me-status', String(meStatus))
   response.headers.set('x-tf-mw-cookie-names', rawCookies.split(/;\s*/).map((c) => c.split('=')[0]?.trim()).filter(Boolean).join(','))
   response.headers.set('x-tf-mw-pathname', pathname)
 

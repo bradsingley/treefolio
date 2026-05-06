@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
-import { supabase } from '@/lib/supabase'
+import { cookies } from 'next/headers'
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.bradsingley.com'
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic']
-const BUCKET = 'treefolio'
 
 export async function POST(request: NextRequest) {
   const formData = await request.formData()
@@ -15,10 +15,7 @@ export async function POST(request: NextRequest) {
   const takenAt = formData.get('taken_at') as string | null
 
   if (!file || !treeId) {
-    return NextResponse.json(
-      { error: 'file and tree_id are required' },
-      { status: 400 },
-    )
+    return NextResponse.json({ error: 'file and tree_id are required' }, { status: 400 })
   }
 
   if (!ALLOWED_TYPES.includes(file.type)) {
@@ -29,60 +26,60 @@ export async function POST(request: NextRequest) {
   }
 
   if (file.size > MAX_FILE_SIZE) {
-    return NextResponse.json(
-      { error: 'File size must be under 10 MB' },
-      { status: 400 },
-    )
+    return NextResponse.json({ error: 'File size must be under 10 MB' }, { status: 400 })
   }
 
-  // Generate a unique path: treeId/timestamp-filename
-  const ext = file.name.split('.').pop() ?? 'jpg'
-  const fileName = `${treeId}/${Date.now()}.${ext}`
+  const cookieStore = await cookies()
+  const cookieHeader = cookieStore.getAll().map((c) => `${c.name}=${c.value}`).join('; ')
 
-  // Upload to Supabase Storage
-  const { error: uploadError } = await supabase.storage
-    .from(BUCKET)
-    .upload(fileName, file, {
-      contentType: file.type,
-      upsert: false,
-    })
+  // 1. Get a signed upload URL from lab-api
+  const uploadUrlRes = await fetch(`${API_BASE}/treefolio/upload-url`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Cookie: cookieHeader },
+    body: JSON.stringify({ treeId, filename: file.name, contentType: file.type }),
+  })
 
-  if (uploadError) {
-    return NextResponse.json(
-      { error: `Upload failed: ${uploadError.message}` },
-      { status: 502 },
-    )
+  if (!uploadUrlRes.ok) {
+    const text = await uploadUrlRes.text()
+    return NextResponse.json({ error: `Failed to get upload URL: ${text}` }, { status: 502 })
   }
 
-  // Get public URL
-  const { data: urlData } = supabase.storage
-    .from(BUCKET)
-    .getPublicUrl(fileName)
+  const { uploadUrl, storagePath } = await uploadUrlRes.json()
 
-  // Store metadata in tf_tree_images
-  const { data: image, error: dbError } = await supabase
-    .from('tf_tree_images')
-    .insert({
-      tree_id: treeId,
-      url: urlData.publicUrl,
+  // 2. Upload directly to Azure Blob via the SAS URL
+  const uploadRes = await fetch(uploadUrl, {
+    method: 'PUT',
+    headers: {
+      'x-ms-blob-type': 'BlockBlob',
+      'Content-Type': file.type,
+    },
+    body: file,
+  })
+
+  if (!uploadRes.ok) {
+    return NextResponse.json({ error: 'Upload to storage failed' }, { status: 502 })
+  }
+
+  // 3. Create the image record in the database via lab-api
+  const imageRes = await fetch(`${API_BASE}/treefolio/trees/${treeId}/images`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Cookie: cookieHeader },
+    body: JSON.stringify({
+      url: storagePath,
       caption: caption || null,
       angle: angle || null,
-      taken_at: takenAt ? (takenAt.length === 7 ? takenAt + '-01' : takenAt) : null,
-    })
-    .select()
-    .single()
+      takenAt: takenAt ? (takenAt.length === 7 ? takenAt + '-01' : takenAt) : null,
+    }),
+  })
 
-  if (dbError) {
-    // Clean up the uploaded file if DB insert fails
-    await supabase.storage.from(BUCKET).remove([fileName])
-    return NextResponse.json(
-      { error: `Failed to save image record: ${dbError.message}` },
-      { status: 500 },
-    )
+  if (!imageRes.ok) {
+    return NextResponse.json({ error: 'Failed to save image record' }, { status: 500 })
   }
+
+  const imageData = await imageRes.json()
 
   revalidatePath('/')
   revalidatePath(`/tree/${treeId}`)
 
-  return NextResponse.json({ image }, { status: 201 })
+  return NextResponse.json({ image: imageData.image }, { status: 201 })
 }

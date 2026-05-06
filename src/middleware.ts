@@ -1,47 +1,36 @@
-import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const publicRoutes = ['/login', '/signup', '/auth/callback']
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.bradsingley.com'
+const publicRoutes = ['/login', '/signup']
 
 export async function middleware(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request })
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            request.cookies.set(name, value),
-          )
-          supabaseResponse = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options),
-          )
-        },
-      },
-    },
-  )
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
   const { pathname } = request.nextUrl
+
+  // Forward the request cookies to the API to check auth
+  const cookieHeader = request.headers.get('cookie') ?? ''
+
+  let user: { id: string; email: string } | null = null
+  try {
+    const res = await fetch(`${API_BASE}/me`, {
+      headers: { Cookie: cookieHeader },
+      cache: 'no-store',
+    })
+    if (res.ok) {
+      const data = await res.json()
+      user = data.user ?? null
+    }
+  } catch {
+    // API unreachable — allow through to avoid blocking the entire app
+  }
 
   // Allow public routes
   if (publicRoutes.some((route) => pathname.startsWith(route))) {
-    // If already logged in, redirect away from login/signup
     if (user && (pathname === '/login' || pathname === '/signup')) {
       const url = request.nextUrl.clone()
       url.pathname = '/'
       return NextResponse.redirect(url)
     }
-    return supabaseResponse
+    return NextResponse.next()
   }
 
   // Protect all other routes
@@ -51,7 +40,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  return supabaseResponse
+  return NextResponse.next()
 }
 
 export const config = {

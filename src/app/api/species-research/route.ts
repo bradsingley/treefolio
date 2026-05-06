@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ai } from '@/lib/ai'
-import { supabase } from '@/lib/supabase'
+import { apiFetch } from '@/lib/api-client'
 
 export async function POST(request: NextRequest) {
   const { species_id } = await request.json() as { species_id?: string }
@@ -9,14 +9,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'species_id is required' }, { status: 400 })
   }
 
-  // Fetch the species
-  const { data: species, error: fetchErr } = await supabase
-    .from('tf_species')
-    .select('*')
-    .eq('id', species_id)
-    .single()
-
-  if (fetchErr || !species) {
+  // Fetch the species via lab-api
+  const cookieHeader = request.headers.get('cookie') ?? ''
+  let species: Record<string, unknown>
+  try {
+    const res = await apiFetch<{ species: Record<string, unknown> }>(`/treefolio/species/${species_id}`, { cookie: cookieHeader })
+    species = res.species
+  } catch {
     return NextResponse.json({ error: 'Species not found' }, { status: 404 })
   }
 
@@ -89,12 +88,18 @@ Each month should have 2-4 specific, actionable tasks. Include timing for repott
     if (research.light && !species.light) updates.light = research.light
     if (research.notes && !species.notes) updates.notes = research.notes
 
-    const { data: updated, error: updateErr } = await supabase
-      .from('tf_species')
-      .update(updates)
-      .eq('id', species_id)
-      .select()
-      .single()
+    const { data: updated, error: updateErr } = await (async () => {
+      try {
+        const res = await apiFetch<{ species: Record<string, unknown> }>(`/treefolio/species/${species_id}`, {
+          method: 'PATCH',
+          cookie: cookieHeader,
+          body: updates,
+        })
+        return { data: res.species, error: null }
+      } catch (e) {
+        return { data: null, error: e instanceof Error ? e : new Error('Update failed') }
+      }
+    })()
 
     if (updateErr) {
       return NextResponse.json({ error: updateErr.message }, { status: 500 })

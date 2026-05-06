@@ -2,18 +2,62 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase-server'
+import { cookies } from 'next/headers'
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.bradsingley.com'
+
+async function authFetch(path: string, body: Record<string, string>) {
+  const cookieStore = await cookies()
+  const cookieHeader = cookieStore.getAll().map((c) => `${c.name}=${c.value}`).join('; ')
+
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Cookie: cookieHeader,
+    },
+    body: JSON.stringify(body),
+    credentials: 'include',
+  })
+
+  // Forward Set-Cookie headers from the API to the browser. We deliberately
+  // STRIP the `Domain=` attribute: the API sets cookies for `.bradsingley.com`
+  // so they're shared across mudbord/connected, but treefolio runs at
+  // `treefolio.vercel.app`. The browser will reject a Set-Cookie with a
+  // `Domain=` that's not a parent of the responding host — so we let it
+  // become a host-only cookie on `treefolio.vercel.app`. The Next.js server
+  // can still forward the cookie to api.bradsingley.com via the Cookie
+  // header (where the domain attribute is irrelevant).
+  const setCookies = res.headers.getSetCookie()
+  for (const sc of setCookies) {
+    const [nameVal, ...parts] = sc.split(';')
+    const [name, ...valParts] = nameVal.split('=')
+    const value = valParts.join('=')
+    const options: Record<string, unknown> = {}
+    for (const part of parts) {
+      const trimmed = part.trim().toLowerCase()
+      if (trimmed === 'httponly') options.httpOnly = true
+      else if (trimmed === 'secure') options.secure = true
+      else if (trimmed.startsWith('path=')) options.path = trimmed.slice(5)
+      // Intentionally drop domain= so the cookie is host-only here.
+      else if (trimmed.startsWith('max-age=')) options.maxAge = parseInt(trimmed.slice(8))
+      else if (trimmed.startsWith('samesite=')) options.sameSite = trimmed.slice(9) as 'lax' | 'strict' | 'none'
+    }
+    cookieStore.set(name.trim(), value, options)
+  }
+
+  return res
+}
 
 export async function loginAction(formData: FormData) {
-  const supabase = await createClient()
-
-  const { error } = await supabase.auth.signInWithPassword({
+  const res = await authFetch('/auth/sign-in/email', {
     email: formData.get('email') as string,
     password: formData.get('password') as string,
   })
 
-  if (error) {
-    redirect('/login?error=' + encodeURIComponent(error.message))
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({ message: 'Login failed' }))
+    redirect('/login?error=' + encodeURIComponent(data.message ?? 'Login failed'))
   }
 
   revalidatePath('/', 'layout')
@@ -21,23 +65,31 @@ export async function loginAction(formData: FormData) {
 }
 
 export async function signupAction(formData: FormData) {
-  const supabase = await createClient()
-
-  const { error } = await supabase.auth.signUp({
+  const res = await authFetch('/auth/sign-up/email', {
     email: formData.get('email') as string,
     password: formData.get('password') as string,
+    name: (formData.get('name') as string) || (formData.get('email') as string).split('@')[0],
   })
 
-  if (error) {
-    redirect('/signup?error=' + encodeURIComponent(error.message))
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({ message: 'Signup failed' }))
+    redirect('/signup?error=' + encodeURIComponent(data.message ?? 'Signup failed'))
   }
 
-  redirect('/login?message=' + encodeURIComponent('Check your email to confirm your account'))
+  revalidatePath('/', 'layout')
+  redirect('/')
 }
 
 export async function logoutAction() {
-  const supabase = await createClient()
-  await supabase.auth.signOut()
+  const cookieStore = await cookies()
+  const cookieHeader = cookieStore.getAll().map((c) => `${c.name}=${c.value}`).join('; ')
+
+  await fetch(`${API_BASE}/auth/sign-out`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Cookie: cookieHeader },
+    credentials: 'include',
+  })
+
   revalidatePath('/', 'layout')
   redirect('/login')
 }

@@ -1,12 +1,13 @@
 import { NextRequest } from 'next/server'
 import { ai } from '@/lib/ai'
-import { supabase } from '@/lib/supabase'
+import { apiFetch } from '@/lib/api-client'
 import { currentAge } from '@/lib/types'
 import type { TreeWithSpecies, CareCalendar } from '@/lib/types'
 
 const MONTH_KEYS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'] as const
 
 export async function POST(request: NextRequest) {
+  const cookieHeader = request.headers.get('cookie') ?? ''
   const { messages, session_id } = await request.json() as {
     messages: { role: 'user' | 'assistant'; content: string }[]
     session_id: string
@@ -19,14 +20,14 @@ export async function POST(request: NextRequest) {
     })
   }
 
-  // Load user's tree catalog for context
-  const { data: trees } = await supabase
-    .from('tf_trees')
-    .select('*, species:tf_species(*)')
-    .eq('is_active', true)
-    .order('name')
-
-  const treesCast = (trees ?? []) as TreeWithSpecies[]
+  // Load user's tree catalog for context via lab-api
+  let treesCast: TreeWithSpecies[] = []
+  try {
+    const res = await apiFetch<{ trees: TreeWithSpecies[] }>('/treefolio/trees', { cookie: cookieHeader })
+    treesCast = res.trees ?? []
+  } catch {
+    // Continue with empty tree list if API call fails
+  }
   const currentMonth = MONTH_KEYS[new Date().getMonth()] as keyof CareCalendar
 
   const treeList = treesCast.map((t) => {
@@ -80,11 +81,11 @@ ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', mon
   // Store the user's latest message
   const lastUserMsg = messages[messages.length - 1]
   if (lastUserMsg?.role === 'user') {
-    await supabase.from('tf_chat_messages').insert({
-      session_id,
-      role: 'user',
-      content: lastUserMsg.content,
-    })
+    await apiFetch('/treefolio/chat', {
+      method: 'POST',
+      cookie: cookieHeader,
+      body: { sessionId: session_id, role: 'user', content: lastUserMsg.content },
+    }).catch(() => {}) // Don't fail the stream if DB insert fails
   }
 
   try {
@@ -115,11 +116,11 @@ ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', mon
 
           // Store assistant response in DB
           if (fullResponse) {
-            await supabase.from('tf_chat_messages').insert({
-              session_id,
-              role: 'assistant',
-              content: fullResponse,
-            })
+            await apiFetch('/treefolio/chat', {
+              method: 'POST',
+              cookie: cookieHeader,
+              body: { sessionId: session_id, role: 'assistant', content: fullResponse },
+            }).catch(() => {})
           }
 
           // Extract calendar-worthy advice from the conversation

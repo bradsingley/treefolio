@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ai } from '@/lib/ai'
-import { supabase } from '@/lib/supabase'
+import { apiFetch } from '@/lib/api-client'
 import { fetchWeather } from '@/lib/weather'
 import { currentAge } from '@/lib/types'
 import type { TreeWithSpecies, CareCalendar } from '@/lib/types'
@@ -16,18 +16,17 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  // Fetch trees with species
-  const { data: trees, error: treesError } = await supabase
-    .from('tf_trees')
-    .select('*, species:tf_species(*)')
-    .eq('is_active', true)
-    .order('name')
-
-  if (treesError) {
-    return NextResponse.json({ error: treesError.message }, { status: 500 })
+  // Fetch trees with species via lab-api
+  const cookieHeader = request.headers.get('cookie') ?? ''
+  let trees: TreeWithSpecies[]
+  try {
+    const res = await apiFetch<{ trees: TreeWithSpecies[] }>('/treefolio/trees', { cookie: cookieHeader })
+    trees = res.trees ?? []
+  } catch {
+    return NextResponse.json({ error: 'Failed to fetch trees' }, { status: 500 })
   }
 
-  if (!trees || trees.length === 0) {
+  if (trees.length === 0) {
     return NextResponse.json({ error: 'No trees in collection' }, { status: 404 })
   }
 
@@ -92,20 +91,18 @@ Keep recommendations specific and actionable. Use the tree's name. Format as mar
 
     const plan = response.choices[0]?.message?.content ?? 'No plan generated.'
 
-    // Store in tf_care_recommendations (one per tree)
+    // Store in tf_care_recommendations (one per tree) via lab-api
     const weekStart = weather.daily[0]?.date ?? new Date().toISOString().slice(0, 10)
     for (const tree of trees) {
-      await supabase
-        .from('tf_care_recommendations')
-        .upsert(
-          {
-            tree_id: tree.id,
-            week_start: weekStart,
-            recommendations: { plan, generated_at: new Date().toISOString() },
-            weather_snapshot: weather,
-          },
-          { onConflict: 'tree_id,week_start' },
-        )
+      await apiFetch(`/treefolio/trees/${tree.id}/recommendations`, {
+        method: 'PUT',
+        cookie: cookieHeader,
+        body: {
+          weekStart,
+          recommendations: { plan, generated_at: new Date().toISOString() },
+          weatherSnapshot: weather,
+        },
+      }).catch(() => {})
     }
 
     return NextResponse.json({ plan, weather })

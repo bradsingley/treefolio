@@ -1,6 +1,11 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.bradsingley.com'
+const PUBLIC_ORIGIN =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : 'https://treefolio.vercel.app')
 const publicRoutes = ['/login', '/signup']
 
 export async function middleware(request: NextRequest) {
@@ -12,7 +17,7 @@ export async function middleware(request: NextRequest) {
   let user: { id: string; email: string } | null = null
   try {
     const res = await fetch(`${API_BASE}/me`, {
-      headers: { Cookie: cookieHeader },
+      headers: { Cookie: cookieHeader, Origin: PUBLIC_ORIGIN },
       cache: 'no-store',
     })
     if (res.ok) {

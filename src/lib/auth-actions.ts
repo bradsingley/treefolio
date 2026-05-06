@@ -3,8 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.bradsingley.com'
+import { API_BASE, PUBLIC_ORIGIN } from './api-client'
 
 async function authFetch(path: string, body: Record<string, string>) {
   const cookieStore = await cookies()
@@ -15,6 +14,9 @@ async function authFetch(path: string, body: Record<string, string>) {
     headers: {
       'Content-Type': 'application/json',
       Cookie: cookieHeader,
+      // better-auth requires a trusted Origin header. Server-side fetch
+      // doesn't set one by default, so we send our public URL.
+      Origin: PUBLIC_ORIGIN,
     },
     body: JSON.stringify(body),
     credentials: 'include',
@@ -86,7 +88,11 @@ export async function logoutAction() {
 
   await fetch(`${API_BASE}/auth/sign-out`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Cookie: cookieHeader },
+    headers: {
+      'Content-Type': 'application/json',
+      Cookie: cookieHeader,
+      Origin: PUBLIC_ORIGIN,
+    },
     credentials: 'include',
   })
 

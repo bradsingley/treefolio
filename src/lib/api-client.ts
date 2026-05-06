@@ -5,6 +5,24 @@
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.bradsingley.com'
 
+/**
+ * Origin header to send on server-side requests to the API. The API uses
+ * better-auth, which validates the Origin against `trustedOrigins`. When the
+ * Next.js server makes a request, fetch doesn't include an Origin header by
+ * default, which better-auth rejects with "Missing or null Origin".
+ *
+ * In production on Vercel, `VERCEL_PROJECT_PRODUCTION_URL` is the canonical
+ * domain (e.g. `treefolio.vercel.app`). Locally / for preview deployments we
+ * fall back to the public URL env var, then to a hardcoded production URL.
+ */
+const PUBLIC_ORIGIN =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : 'https://treefolio.vercel.app')
+
+export { API_BASE, PUBLIC_ORIGIN }
+
 function camelToSnake(str: string): string {
   return str.replace(/[A-Z]/g, (c) => '_' + c.toLowerCase())
 }
@@ -41,6 +59,7 @@ type FetchOptions = {
 export async function apiFetch<T>(path: string, opts: FetchOptions = {}): Promise<T> {
   const url = `${API_BASE}${path}`
   const headers: Record<string, string> = {
+    Origin: PUBLIC_ORIGIN,
     ...(opts.headers ?? {}),
   }
   if (opts.body) headers['Content-Type'] = 'application/json'

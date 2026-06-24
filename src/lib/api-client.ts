@@ -11,12 +11,15 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'https://api.bradsingley.com
  * Next.js server makes a request, fetch doesn't include an Origin header by
  * default, which better-auth rejects with "Missing or null Origin".
  *
- * Set `NEXT_PUBLIC_SITE_URL` to this app's public origin (e.g.
- * `https://treefolio.bradsingley.com`). It must also be present in lab-api's
- * `CORS_ORIGINS` / better-auth `trustedOrigins`.
+ * In production on Vercel, `VERCEL_PROJECT_PRODUCTION_URL` is the canonical
+ * domain (e.g. `treefolio.vercel.app`). Locally / for preview deployments we
+ * fall back to the public URL env var, then to a hardcoded production URL.
  */
 const PUBLIC_ORIGIN =
-  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://treefolio.bradsingley.com'
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : 'https://treefolio.vercel.app')
 
 export { API_BASE, PUBLIC_ORIGIN }
 

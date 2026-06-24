@@ -1,0 +1,2 @@
+# Keeps a public/ directory so the Dockerfile's `COPY public` step works even
+# when the app has no static public assets (Next.js app-router uses src/app).
